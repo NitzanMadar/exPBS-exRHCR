@@ -3,11 +3,17 @@
 #include "agents_loader.h"
 
 #include <boost/heap/fibonacci_heap.hpp>
-#include <google/dense_hash_map>
+//#include <google/dense_hash_map>
+
+#include <sparsehash/dense_hash_map> //
+
 #include <list>
+
+#include <cmath> // added to fix "round not declared in this scope" error (ubuntu 20)
 
 using boost::heap::fibonacci_heap;
 using boost::heap::compare;
+//using namespace std; //
 
 class EPEANode
 {
@@ -84,7 +90,7 @@ public:
 				return false;
 			else
 			{
-				for (int i = 0; i < s1->locs.size(); i++)
+				for (int i = 0; i < (int)s1->locs.size(); i++)
 					if (s1->locs[i] != s2->locs[i])
 						return false;
 				return true;
@@ -96,12 +102,12 @@ public:
 	// this is needed because otherwise we'll have to define the specilized template inside std namespace
 	struct EPEANodeHasher {
 		size_t operator()(const EPEANode* n) const {
-			size_t timestep_hash = hash<int>()(n->makespan);
-			size_t sum_of_locs = 0;
-			for (int i = 0; i < n->locs.size(); i++)
+			size_t timestep_hash = std::hash<int>()(n->makespan); //     fix bug.. copy "std::" from node.h (size_t loc_hash = std::hash<int>()(n->loc);)
+            size_t sum_of_locs = 0;
+			for (int i = 0; i < (int)n->locs.size(); i++)
 				sum_of_locs += n->locs[i];
-			size_t loc_hash = hash<int>()(sum_of_locs);
-			return (loc_hash ^ (timestep_hash << 1));
+			size_t loc_hash = std::hash<int>()(sum_of_locs); // fix bug... copy "std::" from node.h  (The bug: "epea_node.h:106:22: error: reference to ‘hash’ is ambiguous")
+            return (loc_hash ^ (timestep_hash << 1));
 		}
 	};
 

@@ -19,7 +19,9 @@
 #include <stdio.h>
 #include <boost/graph/graphviz.hpp>
 #include <string>
-#include <google/dense_hash_map>
+//#include <google/dense_hash_map>
+#include <sparsehash/dense_hash_map> //
+
 #include <vector>
 #include <utility>
 #include "map_loader.h"
@@ -27,19 +29,25 @@
 using namespace std;
 //using namespace boost; -- collide with std::tuple
 using google::dense_hash_map;      // namespace where class lives by default
-using std::tr1::hash;//ext::hash;  // or __gnu_cxx::hash, or maybe tr1::hash, depending on your OS
 
-// this is needed because otherwise we'll have to define the specilized template inside std namespace
-struct IntHasher
-{
-  std::size_t operator()(const int n) const
-  {
-    using std::tr1::hash;
-    //    cout << "COMPUTE HASH: " << *n << " ; Hash=" << hash<int>()(n->id) << endl;
-    //cout << "   Pointer Address: " << n << endl;
-    return ( hash<int>()(n) );
-  }
-};
+
+// ---------------- comment in ubuntu 20, tr1::hash problem... ------------------
+//using std::tr1::hash;//ext::hash;  // or __gnu_cxx::hash, or maybe tr1::hash, depending on your OS   ----- commented it out in ubuntu 20 but not on ubuntu 14
+//
+//// this is needed because otherwise we'll have to define the specilized template inside std namespace
+//struct IntHasher
+//{
+//  std::size_t operator()(const int n) const
+//  {
+//    using std::tr1::hash;  //-----  hide it in ubuntu 20 but not on ubuntu 14
+//
+//
+//      //    cout << "COMPUTE HASH: " << *n << " ; Hash=" << hash<int>()(n->id) << endl;
+//    //cout << "   Pointer Address: " << n << endl;
+//    return ( hash<int>()(n) );
+//  }
+//};
+// ----------------------------------------------------------------------
 
 // (BGL bundeled properties)
 // this struct contains the internal properties of a vertex

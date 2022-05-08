@@ -38,15 +38,21 @@ AgentsLoader::AgentsLoader(string fname, const MapLoader &ml, int agentsNum = 0)
       pair<int,int> curr_pair;
       // read start [row,col] for agent i
       curr_pair.first = atoi ( (*c_beg).c_str() );
+    //  : add this->q_vector which is row stack [S_x1, S_y1, G_x1, G_y1, ..., S_xn, S_yn, G_xn, G_yn], same format as the database
+      this->q_vector.push_back( atoi((*c_beg).c_str()) ); //  - push S_xi
       c_beg++;
       curr_pair.second = atoi ( (*c_beg).c_str() );
+      this->q_vector.push_back( atoi((*c_beg).c_str()) ); //  - push S_yi
       //      cout << "AGENT" << i << ":   START[" << curr_pair.first << "," << curr_pair.second << "] ; ";
       this->initial_locations.push_back(curr_pair);
+
       // read goal [row,col] for agent i
       c_beg++;
       curr_pair.first = atoi ( (*c_beg).c_str() );
+      this->q_vector.push_back( atoi((*c_beg).c_str()) ); //  - push G_xi
       c_beg++;
       curr_pair.second = atoi ( (*c_beg).c_str() );
+      this->q_vector.push_back( atoi((*c_beg).c_str()) ); //  - push G_yi
       //      cout << "GOAL[" << curr_pair.first << "," << curr_pair.second << "]" << endl;
       this->goal_locations.push_back(curr_pair);
       // read max velocity and accelration for agent i
@@ -58,9 +64,10 @@ AgentsLoader::AgentsLoader(string fname, const MapLoader &ml, int agentsNum = 0)
       this->max_a.push_back(atof((*c_beg).c_str()));*/
     }
     myfile.close();
-  } 
-  else if(agentsNum > 0)//Generate agents randomly
+  }
+  else if(agentsNum > 0) // Generate agents randomly if file name is not exist
   {
+      cout << "Given _.agents file not exist! Generate randomly instance and run..." << endl;
 	  this->num_of_agents = agentsNum;
 	  bool* starts = new bool[ml.rows * ml.cols];
 	  for (int i = 0; i<ml.rows * ml.cols; i++)

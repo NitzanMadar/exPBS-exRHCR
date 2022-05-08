@@ -6,9 +6,12 @@
 #include <utility>
 
 #include <boost/heap/fibonacci_heap.hpp>
-#include <google/dense_hash_map>
+
+#include <sparsehash/dense_hash_map>
+//#include <google/dense_hash_map>
 
 #include "node.h"
+
 
 using google::dense_hash_map;      // namespace where class lives by default
 using std::cout;

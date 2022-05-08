@@ -50,6 +50,8 @@ public:
 	//int num_non_hwy_edges;
 	int num_col;
 
+    int window_size = -1; // for windowed-MAPF queries, solve conflicts for window_size steps (-1 means regular A*)
+
 	vector<int> my_heuristic;  // this is the precomputed heuristic for this agent
 	//bool findPathByMDD(bool* res_table, MDD &mdd);
 	

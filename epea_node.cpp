@@ -210,7 +210,7 @@ EPEANode::EPEANode(const MapLoader &ml, const AgentsLoader &al, const vector<dou
 	this->g = 0;
 	this->h = 0;
 	locs.resize(al.num_of_agents);
-	for (int i = 0; i < locs.size(); i++)
+	for (int i = 0; i < (int)locs.size(); i++)
 	{
 		locs[i] =num_of_cols * al.initial_locations[i].first + al.initial_locations[i].second;
 		this->h += my_heuristics[i][locs[i]];
@@ -264,7 +264,7 @@ void EPEANode::deep_copy(const EPEANode &cpy)
 	this->edge_cons.resize(cpy.edge_cons.size());
 	this->edge_cons.assign(cpy.edge_cons.begin(), cpy.edge_cons.end());
 	this->singleAgentDeltaFs = new vector<list<pair<int16_t, int16_t>>>(cpy.singleAgentDeltaFs->size());
-	for (int i = 0; i < this->singleAgentDeltaFs->size(); i++)
+	for (int i = 0; i < (int)this->singleAgentDeltaFs->size(); i++)
 	{
 		this->singleAgentDeltaFs->at(i).resize(cpy.singleAgentDeltaFs->at(i).size());
 		this->singleAgentDeltaFs->at(i).assign(cpy.singleAgentDeltaFs->at(i).begin(), cpy.singleAgentDeltaFs->at(i).end());

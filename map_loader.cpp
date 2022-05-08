@@ -58,6 +58,7 @@ MapLoader::MapLoader(string fname){
     char_separator<char> sep(",");
     tokenizer< char_separator<char> > tok(line, sep);
     tokenizer< char_separator<char> >::iterator beg=tok.begin();
+    tokenizer< char_separator<char> >::iterator c_beg=tok.begin();
     int rows = atoi ( (*beg).c_str() ); // read number of rows
     beg++;
     int cols = atoi ( (*beg).c_str() ); // read number of cols
@@ -68,7 +69,12 @@ MapLoader::MapLoader(string fname){
     for (int i=0; i<rows; i++) {
 		getline (myfile, line);
 		for (int j=0; j<cols; j++) {
-		  my_map[cols*i + j] = (line[j] != '.');
+//		    if (line[j]==',') { // added to support maps separated by ","
+//		        j=j-1;
+//		        continue;
+//		    } // end if
+		    my_map[cols*i + j] = (line[j] == '@' or line[j] == '1' or line[j] == 'T'); // support 1/0 format (add or line[j] != 0) anf 'T' for dao maps
+//            cout << line[j];
 		}
     }
 	/*for (unsigned int i = 0; i < sizeof(my_map);i++)
@@ -88,7 +94,7 @@ MapLoader::MapLoader(string fname){
     moves_offset[MapLoader::valid_moves_t::WEST] = -1;
   }
   else
-    cerr << "Map file not found." << std::endl;
+    cerr << endl << endl << "Map file not found!!!" << endl << endl << endl;
 }
 
 char* MapLoader::mapToChar() {

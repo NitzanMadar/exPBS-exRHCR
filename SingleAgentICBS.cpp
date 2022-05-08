@@ -17,13 +17,14 @@ void SingleAgentICBS::updatePath(const LLNode* goal, vector<PathEntry> &path)
 
 // iterate over the constraints ( cons[t] is a list of all constraints for timestep t) and return the latest
 // timestep which has a constraint involving the goal location
+// window_size did *not* taken into account here.
 int SingleAgentICBS::extractLastGoalTimestep(int goal_location, const vector < vector< bool > >& priorities, const vector<vector<PathEntry>*>& current_paths) {
 	int retVal = -1;
 	for (int ag = 0; ag < current_paths.size(); ag++) {
-		if (ag != agent_id && current_paths[ag] != NULL && priorities[ag][agent_id]) {
-			int last_time = current_paths[ag]->size() - 1;
+		if (ag != agent_id && current_paths[ag] != NULL && priorities[ag][agent_id]) {  // different agents, other agent has path, and he with higher priority
+			int last_time = current_paths[ag]->size() - 1;  // last timestep in the other agent path
 			if (retVal < last_time) {
-				retVal = last_time;
+				retVal = last_time;  // save the max
 			}
 		}
 	}
@@ -33,21 +34,37 @@ int SingleAgentICBS::extractLastGoalTimestep(int goal_location, const vector < v
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // input: curr_id (location at time next_timestep-1) ; next_id (location at time next_timestep); next_timestep
 //        cons[timestep] is a list of <loc1,loc2> of (vertex/edge) constraints for that timestep.
+// window_size is *taken* into account here.
 inline bool SingleAgentICBS::isConstrained(int curr_id, int next_id, int next_timestep, const vector < vector< bool > >& priorities, const vector<vector<PathEntry>*>& current_paths)  const {
-	for (int ag = 0; ag < current_paths.size(); ag++) {
+
+    if (next_timestep > window_size+1){
+	    return false;
+	}
+
+    for (int ag = 0; ag < current_paths.size(); ag++) {
 		if (ag != agent_id && current_paths[ag] != NULL && priorities[ag][agent_id]) { // check only high prior agents
-			if (next_timestep >= current_paths[ag]->size()) {
-				if (current_paths[ag]->back().location == next_id) { //vertex constraint
+			if (next_timestep >= current_paths[ag]->size()) { //higher priority agents holding end point
+				if (current_paths[ag]->back().location == next_id) { // vertex constraint
 					return true;
 				}
 			}
 			else {
-				if (current_paths[ag]->at(next_timestep).location == next_id //vertex constraint
+				if (current_paths[ag]->at(next_timestep).location == next_id // vertex constraint
 					|| (current_paths[ag]->at(next_timestep).location == curr_id && current_paths[ag]->at(next_timestep - 1).location == next_id)) { // edge constraint
 					return true;
 				}
 			}
 		}
+
+		// adding this - every agent is holding end location
+        if (ag != agent_id && current_paths[ag] != NULL){
+            // if (next_timestep >= current_paths[ag]->size()) {
+                if (current_paths[ag]->back().location == next_id) { // vertex constraint
+                    return true;
+                }
+            // }
+        }
+
 	}
 	return false;
 }
@@ -55,42 +72,54 @@ inline bool SingleAgentICBS::isConstrained(int curr_id, int next_id, int next_ti
 
 
 pair<int, int> SingleAgentICBS::numOfConflictsForStep(int curr_id, int next_id, int next_timestep, const vector < vector< bool > >& priorities, const vector<vector<PathEntry>*>& current_paths, vector< bool >& colliding_agents) {
+    // Finds conflicts for both higher and lower priority agents with the treated agent (curr_id = agent_id)
+    // window_size is *taken* into account here.
+
 	int retVal = 0;
 	int retVal_lowPrior = 0;
-	for (int ag = 0; ag < current_paths.size(); ag++) {
-		if (ag != agent_id && current_paths[ag] != NULL && !priorities[ag][agent_id] && !colliding_agents[ag]) { // higher prior ag is hard constraints (not soft)
-			if (next_timestep >= current_paths[ag]->size()) {
-				// check vertex constraints (being at an agent's goal when he stays there because he is done planning)
-				if (current_paths[ag]->back().location == next_id) {
-					colliding_agents[ag] = true;
-					if (priorities[agent_id][ag]) { // low prior ag
-						retVal_lowPrior++;
-					}
-					else {
-						retVal++;
-					}
-					continue;
-				}
-				// Note -- there cannot be edge conflicts when other agents are done moving
-			}
-			else {
-				// check vertex constraints (being in next_id at next_timestep is disallowed)
-				if (current_paths[ag]->at(next_timestep).location == next_id //vertex constraint
-					|| (current_paths[ag]->at(next_timestep).location == curr_id && current_paths[ag]->at(next_timestep - 1).location == next_id)) { // edge constraint
-					colliding_agents[ag] = true;
-					if (priorities[agent_id][ag]) { // low prior ag
-						retVal_lowPrior++;
-					}
-					else {
-						retVal++;
-					}
-					continue;
-				}
-			}
-		}
-	}
+
+    // check only if next timestep < window_size + 1 (+1 because its next), otherwise we return 0 - avoid collision out of the horizon planning
+    if (next_timestep < window_size+1){
+        // cout << "numOfConflictsForStep alive with t=" << next_timestep <<endl;
+
+        for (int ag = 0; ag < current_paths.size(); ag++) {  //iterate agents
+            if (ag != agent_id && current_paths[ag] != NULL && !priorities[ag][agent_id] && !colliding_agents[ag]) { // higher prior agent is hard constraints (not soft)
+                if (next_timestep >= current_paths[ag]->size()) {
+                    // check vertex constraints (being at an agent's goal when he stays there because he is done planning)
+                    if (current_paths[ag]->back().location == next_id) {
+                        colliding_agents[ag] = true;
+                        if (priorities[agent_id][ag]) { // low prior ag
+                            retVal_lowPrior++;
+                        }
+                        else {
+                            retVal++;
+                        }
+                        continue;
+                    }
+                    // Note -- there cannot be edge conflicts when other agents are done moving
+                }
+
+                else {  // next_timestep < current_paths[ag]->size()
+                    // check vertex constraints (being in next_id at next_timestep is disallowed)
+                    if (current_paths[ag]->at(next_timestep).location == next_id //vertex constraint
+                        || (current_paths[ag]->at(next_timestep).location == curr_id && current_paths[ag]->at(next_timestep - 1).location == next_id)) { // edge constraint
+                        colliding_agents[ag] = true;
+                        if (priorities[agent_id][ag]) { // low prior ag
+                            retVal_lowPrior++;
+                        }
+                        else {
+                            retVal++;
+                        }
+                        continue;
+                    }
+                }
+            }
+        }
+
+	} // end if next_timestep < window_size
+    // if(retVal>0)
 	//  cout << "#CONF=" << retVal << " ; For: curr_id=" << curr_id << " , next_id=" << next_id << " , next_timestep=" << next_timestep
-	//       << " , max_plan_len=" << max_plan_len << endl;
+	//       << " , window_size=" << window_size << endl;
 	return pair<int, int>(retVal, retVal_lowPrior);
 }
 
@@ -106,9 +135,15 @@ bool SingleAgentICBS::findPath(vector<PathEntry> &path, double f_weight, const v
 	// clear data structures if they had been used before
 	// (note -- nodes are deleted before findPath returns)
 	
-
+    // cout << "SingleAgentICBS::findPath" << endl;
 	num_expanded = 0;
 	num_generated = 0;
+
+
+    // if window_size<-1 in the GICBSSearch.cpp, than this variable will be node->makespan + 1.
+    // max_plan_len was in the original code but didn't used before (reused to keep function signature)
+    window_size = (int)max_plan_len;
+    // cout << "DEBUG 135: findPath window_size (int) =" << window_size << endl;
 
 	hashtable_t::iterator it;  // will be used for find()
 
@@ -153,12 +188,16 @@ bool SingleAgentICBS::findPath(vector<PathEntry> &path, double f_weight, const v
 		if (curr->loc == goal_location) {
 			bool is_goal = true;
 			for (int t = curr->g_val; t < lastGoalConsTime; t++) {
-				if (isConstrained(goal_location, goal_location, t + 1, priorities, current_paths)) {
+
+			    if (t > window_size - 1){
+			        break;
+			    }
+				if (isConstrained(goal_location, goal_location, t + 1, priorities, current_paths)) {  // checks if being in goal create conflict with higher priorities agents
 					is_goal = false;
 					break;
 				}
 			}
-			if (is_goal) {
+			if (is_goal) {  // legal goal founded
 				updatePath(curr, path);
 				releaseClosedListNodes(&allNodes_table);
 				open_list.clear();
@@ -169,9 +208,9 @@ bool SingleAgentICBS::findPath(vector<PathEntry> &path, double f_weight, const v
 		}
 
 		int next_id;
-		for (int i = 0; i < 5; i++)
+		for (int i = 0; i < 5; i++) // iterate actions
 		{
-			if (curr->timestep == lastGoalConsTime && i == 4) { // no reason to wait
+			if (curr->timestep == lastGoalConsTime && i == 4) { // no reason to wait (i==4 means wait)
 				continue;
 			}
 
@@ -202,7 +241,7 @@ bool SingleAgentICBS::findPath(vector<PathEntry> &path, double f_weight, const v
 					pair<int, int> next_internal_conflicts_pair = numOfConflictsForStep(curr->loc, next_id, next_g_val, priorities, current_paths, next_colliding_agents);
 					// generate (maybe temporary) node
 					int next_internal_conflicts = curr->num_internal_conf + next_internal_conflicts_pair.first;
-					int next_internal_conflicts_lp = curr->num_internal_conf_lp + next_internal_conflicts_pair.second;
+					int next_internal_conflicts_lp = curr->num_internal_conf_lp + next_internal_conflicts_pair.second; // LP = lower priority
 					LLNode* next = new LLNode(next_id, next_g_val, next_h_val,	curr, next_timestep, next_internal_conflicts, next_internal_conflicts_lp, false);
 					next->colliding_agents = next_colliding_agents;
 					// cout << "   NEXT(" << next << ")=" << *next << endl;

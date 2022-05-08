@@ -151,7 +151,7 @@ bool ICBSSearch::findPathForSingleAgent(ICBSNode*  node, int ag, double lowerbou
 	vector<vector<PathEntry>> new_paths(num_of_agents, vector<PathEntry>());
 
 	if (!lazy_gen) {
-		// Kahn¡¯s algorithm for Topological Sorting
+		// Kahnï¿½ï¿½s algorithm for Topological Sorting
 		vector<bool> low_prio(num_of_agents, false); // lower prio agents including ag
 		low_prio[ag] = true;
 		for (int a1 = 0; a1 < num_of_agents; a1++) { 

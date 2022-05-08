@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#define TIME_LIMIT 60000
+#define TIME_LIMIT 60000000     //   60000000 - this is 1 minute [microseconds]
 
 enum constraint_strategy { ECBS, N_ECBS, ICBS, N_ICBS, CBSH, N_CBSH, CBSH_CR,CBSH_R,CBSH_RM, STRATEGY_COUNT };
 

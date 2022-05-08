@@ -2,7 +2,9 @@
 #include "compute_heuristic.h"
 #include <cstring>
 #include <climits>
-#include <google/dense_hash_map>
+//#include <google/dense_hash_map>
+#include <sparsehash/dense_hash_map> //
+
 #include "node.h"
 
 using google::dense_hash_map;      // namespace where class lives by default

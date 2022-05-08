@@ -50,7 +50,7 @@
 class GICBSNode
 {
 public:
-	// the following is used to comapre nodes in the OPEN list
+	// the following is used to compare nodes in the OPEN list
 	struct compare_node {
 		bool operator()(const GICBSNode* n1, const GICBSNode* n2) const {
 			return n1->depth <= n2->depth;
