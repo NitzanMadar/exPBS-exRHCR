@@ -1,9 +1,14 @@
 # exPBS + exRHCR
+exPBS and exRHCR implementation [Madar et al., 2022][^1].
 <!-- --- -->
 
 ## Abstract
-In Lifelong Multi-Agent Path Finding (L-MAPF) a team of agents performs a stream of tasks consisting of multiple locations to be visited by the agents on a shared graph while avoiding collisions with one another. L-MAPF is typically tackled by partitioning it into *multiple consecutive*, and hence *similar*, "one-shot" MAPF queries with a single task assigned to each agent, as in the Rolling-Horizon Collision Resolution (RHCR) algorithm [Li et al., 2021][^1]. Thus, a solution to one query informs the next query, which leads to similarity with respect to the agents' start and goal positions, and how collisions need to be resolved from one query to the next. Thus, experience from solving one MAPF query can potentially be used to speedup solving the next one. Despite this intuition, current L-MAPF planners solve consecutive MAPF queries *from scratch*. In this paper, we introduce a new RHCR-inspired approach called exRHCR, which exploits experience in its constituent MAPF queries. In particular, exRHCR employs a new extension of Priority-Based Search (PBS) [Ma et al., 2019][^2], a state-of-the-art MAPF solver. Our extension, called exPBS, allows to warm-start the search with the priorities between agents used by PBS in the previous MAPF instances.
-We demonstrate empirically that exRHCR solves L-MAPF up to 25% faster than RHCR, and allows to increase throughput for given task streams by as much as 3%-16% by increasing the number of agents we can cope with for a given time budget.
+In Lifelong Multi-Agent Path Finding (L-MAPF) a team of agents performs a stream of tasks consisting of multiple locations to be visited by the agents on a shared graph while avoiding collisions with one another.
+L-MAPF is typically tackled by partitioning it into *multiple consecutive*, and hence *similar*, "one-shot" MAPF queries, as in the Rolling-Horizon Collision Resolution (RHCR) algorithm [Li et al., 2021][^2].
+Therefore, a solution to one query informs the next query, which leads to similarity with respect to the agents' start and goal positions, and how collisions need to be resolved from one query to the next. Thus, experience from solving one MAPF query can potentially be used to speedup solving the next one.
+Despite this intuition, current L-MAPF planners solve consecutive MAPF queries from scratch.
+In this paper, we introduce a new RHCR-inspired approach called exRHCR, which exploits experience in its constituent MAPF queries. In particular, exRHCR employs a new extension of Priority-Based Search (PBS) [Ma et al., 2019][^3], a state-of-the-art MAPF solver. Our extension, called exPBS, allows to warm-start the search with the priorities between agents used by PBS in the previous MAPF instances.
+We demonstrate empirically that exRHCR solves L-MAPF instances up to 39% faster than RHCR, and has the potential to increase system throughput for given task streams by increasing the number of agents a planner can cope with for a given time budget.
 
 
 ## Libraries Required
@@ -61,8 +66,8 @@ make executable
  
  
 ## References
+[^1]: [Madar et al., 2022] [Nitzan Madar, Kiril Solovey, and Oren Salzman. Leveraging Experience in Lifelong Multi-Agent Pathfinding. In Symposium on Combinatorial Search (SoCS), 2022.](https://arxiv.org/abs/2202.04382)
 
-[^1]: [Li et al., 2021] Jiaoyang Li, Andrew Tinka, Scott Kiesel, Joseph W. Durham, T. K. Satish Kumar and Sven Koenig. Lifelong Multi-Agent Path Finding in Large-Scale Warehouses. In Proceedings of the AAAI Conference on Artificial Intelligence (AAAI), , 2021.
+[^2]: [Li et al., 2021] [Jiaoyang Li, Andrew Tinka, Scott Kiesel, Joseph W. Durham, T. K. Satish Kumar and Sven Koenig. Lifelong Multi-Agent Path Finding in Large-Scale Warehouses. In Proceedings of the AAAI Conference on Artificial Intelligence (AAAI), 2021.](http://idm-lab.org/bib/abstracts/papers/aaai21b.pdf)
 
-[^2]: [Ma et al., 2019] Hang Ma, Daniel Harabor, Peter J Stuckey, Jiaoyang Li, and Sven Koenig. Searching with consistent prioritization for multi-agent path finding. In
-Conferences on Artificial Intelligence (AAAI), volume 33, pages 7643–7650, 2019.
+[^3]: [Ma et al., 2019] [Hang Ma, Daniel Harabor, Peter J Stuckey, Jiaoyang Li, and Sven Koenig. Searching with consistent prioritization for multi-agent path finding. In Conferences on Artificial Intelligence (AAAI), volume 33, pages 7643–7650, 2019.](http://idm-lab.org/bib/abstracts/papers/aaai19b.pdf)
